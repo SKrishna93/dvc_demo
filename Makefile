@@ -29,6 +29,9 @@ test-full: ## Run all tests
 train: ## Train the model
 	python src/train.py
 
+eval: ## eval the model
+	python src/eval.py
+
 debug: ## Enter debugging mode with pdb
 	#
 	# tips:
