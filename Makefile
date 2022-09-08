@@ -43,3 +43,11 @@ debug: ## Enter debugging mode with pdb
 	# - docs: https://docs.python.org/3/library/pdb.html
 	#
 	python -m pdb src/train.py debug=default
+
+docker-build: ##Build Docker image
+	@echo Build docker image...
+	docker build --tag cifar10 .
+
+docker-train: ##Run Docker for train
+	@echo Running model training...
+	docker run --rm -it cifar10 python3 src/train.py
