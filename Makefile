@@ -51,3 +51,7 @@ docker-build: ##Build Docker image
 docker-train: ##Run Docker for train
 	@echo Running model training...
 	docker run --rm -it cifar10 python3 src/train.py
+
+docker-test: ##Run Docker for test
+	@echo Running model inferencing...
+	docker run --rm -it cifar10 python3 src/eval.py
