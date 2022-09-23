@@ -1,9 +1,10 @@
 from typing import Any, List
 
 import torch
-from pytorch_lightning import LightningModule
+from pytorch_lightning import LightningModule, loggers
 from torchmetrics import MaxMetric
 from torchmetrics.classification.accuracy import Accuracy
+#from pytorch_lightning.loggers import TensorBoardLogger
 
 
 class TIMMLitModule(LightningModule):
@@ -13,7 +14,7 @@ class TIMMLitModule(LightningModule):
         - Computations (init).
         - Train loop (training_step)
         - Validation loop (validation_step)
-        - Test loop (test_step)
+        - Test loop (test_st(ep)
         - Prediction Loop (predict_step)
         - Optimizers and LR Schedulers (configure_optimizers)
 
@@ -31,6 +32,9 @@ class TIMMLitModule(LightningModule):
         # this line allows to access init params with 'self.hparams' attribute
         # also ensures init params will be stored in ckpt
         self.save_hyperparameters(logger=False, ignore=["net"])
+        #print("HPARAMS", self.hparams)
+        #self.hparams['hp/metric_1'] = 0
+       
 
         self.net = net
 
@@ -52,6 +56,7 @@ class TIMMLitModule(LightningModule):
     def on_train_start(self):
         # by default lightning executes validation step sanity checks before training starts,
         # so we need to make sure val_acc_best doesn't store accuracy from these checks
+        self.logger.log_hyperparams(self.hparams,{"val/acc":0})
         self.val_acc_best.reset()
 
     def step(self, batch: Any):
@@ -66,8 +71,11 @@ class TIMMLitModule(LightningModule):
 
         # log train metrics
         acc = self.train_acc(preds, targets)
-        self.log("train/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
-        self.log("train/acc", acc, on_step=False, on_epoch=True, prog_bar=True)
+        self.log("train/loss", loss, on_step=True, on_epoch=True, prog_bar=False)
+        self.log("train/acc", acc, on_step=True, on_epoch=True, prog_bar=True)
+        #self.log("hp/train_acc", acc)
+        #self.log("hp/train_loss", loss)
+        #self.logger.log_hyperparams(self.hparams,{"hp/train_acc":0})
 
         # we can return here dict with any tensors
         # and then read it in some callback or in `training_epoch_end()` below
@@ -76,6 +84,7 @@ class TIMMLitModule(LightningModule):
 
     def training_epoch_end(self, outputs: List[Any]):
         # `outputs` is a list of dicts returned from `training_step()`
+        #self.log("hp/metric_2", train_loss)
         self.train_acc.reset()
 
     def validation_step(self, batch: Any, batch_idx: int):
@@ -85,6 +94,7 @@ class TIMMLitModule(LightningModule):
         acc = self.val_acc(preds, targets)
         self.log("val/loss", loss, on_step=False, on_epoch=True, prog_bar=False)
         self.log("val/acc", acc, on_step=False, on_epoch=True, prog_bar=True)
+        #self.logger.log_hyperparams(self.hparams,{"hp/val_acc":0})
 
         return {"loss": loss, "preds": preds, "targets": targets}
 
@@ -92,6 +102,7 @@ class TIMMLitModule(LightningModule):
         acc = self.val_acc.compute()  # get val accuracy from current epoch
         self.val_acc_best.update(acc)
         self.log("val/acc_best", self.val_acc_best.compute(), on_epoch=True, prog_bar=True)
+        self.log("val/acc", acc)
         self.val_acc.reset()
 
     def test_step(self, batch: Any, batch_idx: int):

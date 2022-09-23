@@ -1,15 +1,10 @@
 # @package _global_
 
 # example hyperparameter optimization of some experiment with Optuna:
-# python train.py -m hparams_search=cifar10_optuna experiment=example
+# python train.py -m hparams_search=mnist_optuna experiment=example
 
 defaults:
   - override /hydra/sweeper: optuna
-  - override /datamodule: cifar10.yaml
-  - override /model: timm.yaml
-  - override /callbacks: default.yaml
-  - override /trainer: default.yaml
-  - override /logger: tensorboard.yaml
 
 # choose metric which will be optimized by Optuna
 # make sure this is the correct name of some metric logged in lightning module!
@@ -17,7 +12,7 @@ optimized_metric: "val/acc_best"
 
 # here we define Optuna hyperparameter search
 # it optimizes for value returned from function with @hydra.main decorator
-# docs: https://hydra.cc/docs/next/plugins/optuna_sweeper
+# docs: <https://hydra.cc/docs/next/plugins/optuna_sweeper>
 hydra:
   mode: "MULTIRUN" # set hydra to multirun by default if this config is attached
 
@@ -42,7 +37,7 @@ hydra:
 
     # choose Optuna hyperparameter sampler
     # you can choose bayesian sampler (tpe), random search (without optimization), grid sampler, and others
-    # docs: https://optuna.readthedocs.io/en/stable/reference/samplers.html
+    # docs: <https://optuna.readthedocs.io/en/stable/reference/samplers.html>
     sampler:
       _target_: optuna.samplers.TPESampler
       seed: 1234
@@ -50,6 +45,8 @@ hydra:
 
     # define hyperparameter search space
     params:
-      model.optimizer._target_: choice(torch.optim.Adam, torch.optim.SGD, torch.optim.RMSprop)
       model.optimizer.lr: interval(0.0001, 0.1)
       datamodule.batch_size: choice(32, 64, 128, 256)
+      model.net.lin1_size: choice(64, 128, 256)
+      model.net.lin2_size: choice(64, 128, 256)
+      model.net.lin3_size: choice(32, 64, 128, 256)
