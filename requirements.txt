@@ -17,7 +17,7 @@ hydra-optuna-sweeper==1.2.0
 # comet-ml
 
 # --------- others --------- #
-dvc==2.26.2
+dvc==2.28.0
 dvc-gdrive==2.19.0
 pyrootutils     # standardizing the project root setup
 pre-commit      # hooks for applying linters on commit
